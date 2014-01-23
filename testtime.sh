@@ -1,6 +1,7 @@
 #!/bin/bash
 echo "curling..."
 
-curl -i -X GET  http://jarne1076:1076jarne@www.jarne.com/msg/servertime
+curl -i -X GET  http://jarne107$1:107$1jarne@www.jarne.com/msg/servertime
 
+echo ""
 
