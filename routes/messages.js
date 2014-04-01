@@ -1,15 +1,19 @@
-var mongo = require('mongodb');
-
+var mongo = require('mongodb').MongoClient;
+/*
 var Server = mongo.Server,
     Db = mongo.Db,
     BSON = mongo.BSONPure;
 
 var server = new Server('localhost', 27017, {auto_reconnect: true} );
-dbmsgs= new Db('msgdb', server, {safe:true});
+*/
+var dbmsgs ;
+// = new Db('msgdb', server, {safe:true});
 
-dbmsgs.open(function(err, dbmsgs) {
+mongo.connect( "mongodb://serjar:mukilteo@ds041327.mongolab.com:41327/msgdb", function(err, db) {
+//    test.ok(dbmsgs != null);
     console.log("Opening 'msgs' database");
     if(!err) {
+        dbmsgs = db;
         console.log("Connected to 'msgs' database");
         dbmsgs.collection('msgs', {strict:true}, function(err, collection) {
             if (err) {
@@ -22,16 +26,16 @@ dbmsgs.open(function(err, dbmsgs) {
                 console.log("The 'convs' collection doesn't exist. Creating it with sample data...");
                 populateDBConvs();
             }
-        });        
+        }); 
     }
 });
 
-exports.getAll = function(req,res) {
-    dbmsgs.collection('msgs', function(err, collection) {
-        collection.find().toArray(function(err, items) {
-            res.send(items);
-        });
-    });
+function getAll(req,res) {
+			dbmsgs.collection('msgs', function(err, collection) {
+				collection.find().toArray(function(err, items) {
+						res.send(items);
+				});
+			});
 }
 
 
@@ -51,11 +55,14 @@ exports.addMessage = function(req, res) {
 }
 
 exports.getMessagesForReceiver = function(req, res) {
-    dbmsgs.collection('msgs', function(err, collection) {
-        collection.find({destination:req.params.id}).toArray(function(err, items) {
-            res.send(items);
+    if (req.params.id == '*') getAll(req,res);
+		else { 
+        dbmsgs.collection('msgs', function(err, collection) {
+				  	collection.find({destination:req.params.id}).toArray(function(err, items) {
+					  		res.send(items);
+					  });
         });
-    });
+    }
 }
 
 /*
@@ -186,7 +193,7 @@ exports.getServerTime = function(req, res) {
          }
     ];
 
-    dbmsgs.collection('msgs', function(err, collection) {
+    global.dbmsgs.collection('msgs', function(err, collection) {
         collection.insert(msg, {safe:true}, function(err, result) {});
     });
 };
@@ -203,7 +210,7 @@ exports.getServerTime = function(req, res) {
          }
     ];
 
-    dbmsgs.collection('convs', function(err, collection) {
+    global.dbmsgs.collection('convs', function(err, collection) {
         collection.insert(conv, {safe:true}, function(err, result) {});
     });
 }
